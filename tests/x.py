@@ -35,13 +35,12 @@ def maybe_fetch_sqlite_extension():
     BASE_URL = "https://github.com/nalgeon/sqlean/releases/download/0.15.2/"
     if platform.system() == "Darwin":
         if platform.machine() == "arm64":
-            download_url = BASE_URL + "/ipaddr.arm64.dylib"
-            filename = "ipaddr.dylib"
+            download_url = f"{BASE_URL}/ipaddr.arm64.dylib"
         else:
-            download_url = BASE_URL + "/ipaddr.dylib"
-            filename = "ipaddr.dylib"
+            download_url = f"{BASE_URL}/ipaddr.dylib"
+        filename = "ipaddr.dylib"
     elif platform.system() == "Linux":
-        download_url = BASE_URL + "/ipaddr.so"
+        download_url = f"{BASE_URL}/ipaddr.so"
         filename = "ipaddr.so"
     else:
         # Unsupported OS
@@ -73,18 +72,17 @@ def run(command, comment=None, env=None, service=None, tag=None, args=None, data
 
     environ = env or {}
 
-    if service == "sqlite":
-        if maybe_fetch_sqlite_extension() is not None:
-            if environ.get("RUSTFLAGS"):
-                environ["RUSTFLAGS"] += " --cfg sqlite_ipaddr"
-            else:
-                environ["RUSTFLAGS"] = "--cfg sqlite_ipaddr"
+    if service == "sqlite" and maybe_fetch_sqlite_extension() is not None:
+        if environ.get("RUSTFLAGS"):
+            environ["RUSTFLAGS"] += " --cfg sqlite_ipaddr"
+        else:
+            environ["RUSTFLAGS"] = "--cfg sqlite_ipaddr"
 
     if service is not None:
         database_url = start_database(service, database="sqlite/sqlite.db" if service == "sqlite" else "sqlx", cwd=dir_tests)
 
         if database_url_args:
-            database_url += "?" + database_url_args
+            database_url += f"?{database_url_args}"
 
         environ["DATABASE_URL"] = database_url
 
@@ -160,9 +158,9 @@ for runtime in ["async-std", "tokio", "actix"]:
 
         run(
             f"cargo test --no-default-features --features macros,offline,any,all-types,sqlite,runtime-{runtime}-{tls}",
-            comment=f"test sqlite",
+            comment="test sqlite",
             service="sqlite",
-            tag=f"sqlite" if runtime == "async-std" else f"sqlite_{runtime}",
+            tag="sqlite" if runtime == "async-std" else f"sqlite_{runtime}",
         )
 
         #
